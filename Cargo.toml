@@ -10,6 +10,6 @@ rocket = { version = "=0.5.0-rc.3", features = ["serde_json"]}
 serde = {version = "1.0.180", features = ["derive"]}
 serde_json = "1.0.104"
 ckb-sdk = "2.5.0"
-spore-types = { path = "../cellular-contract/lib/types" }
+spore-types = "0.1.0"
 molecule = "0.7.1"
 ckb-types = "0.108.0"

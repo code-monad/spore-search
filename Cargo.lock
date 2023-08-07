@@ -2270,6 +2270,8 @@ dependencies = [
 [[package]]
 name = "spore-types"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d33e01366191acc9c76515fa8396195fa44a2e3af0baab54992960503c13edef"
 dependencies = [
  "molecule",
 ]

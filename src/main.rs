@@ -17,9 +17,9 @@ use rocket::serde::Serialize;
 use rocket::State;
 use spore_types::generated::spore_types::ClusterData;
 
-const SPORE_CODE_HASH: H256 = h256!("0x02d8136d628508ad53f67fccca6ae9744e98ee829783e8c30b8891be03d70ed2");
-
-const CLUSTER_CODE_HASH: H256 = h256!("0x8d2f24b55961808ab81b312e3ea789677e7c11ad7c059bf6b0ca16382bb1818e");
+// These are testnet code hashes
+const SPORE_CODE_HASH: H256 = h256!("0xc1a7e2d2bd7e0fa90e2f1121782aa9f71204d1fee3a634bf3b12c61a69ee574f");
+const CLUSTER_CODE_HASH: H256 = h256!("0x598d793defef36e2eeba54a9b45130e4ca92822e1d193671f490950c3b856080");
 
 
 // utils transfer spore cell into json
@@ -56,6 +56,7 @@ impl From<Cell> for SporeJsonData {
 impl From<Cell> for ClusterJsonData {
     fn from(cell: Cell) -> Self {
         let data = cell.output_data.unwrap();
+        println!("{}",format!("0x{}", hex_string(cell.output.type_.clone().unwrap_or_default().args.as_bytes())));
         let raw_cluster = ClusterData::from_slice(data.as_bytes()).unwrap_or_default();
         ClusterJsonData {
             name: String::from_utf8(raw_cluster.name().as_reader().raw_data().to_vec()).unwrap_or_default(),
@@ -153,6 +154,6 @@ fn get_cluster_by_id(id: &str, client: &State<ClientContext>) -> String {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .manage(ClientContext { client: Arc::new(Mutex::new(CkbRpcClient::new("https://testnet.ckb.dev"))) })
+        .manage(ClientContext { client: Arc::new(Mutex::new(CkbRpcClient::new("https://testnet.ckb.dev"))) }) // replace the PRC URL with your local one to speed up quering
         .mount("/", routes![index, get_all_spore, get_spore_by_id, get_all_cluster, get_cluster_by_id])
 }

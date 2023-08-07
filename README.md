@@ -1,5 +1,8 @@
 # Spore Search
-A very tiny program shows how to index Spore and Cluster cells from chain using indexer.
+A very tiny example program shows how to index Spore and Cluster cells from chain using indexer.
+
+## Quick Start
+Just Run `cargo run`, it will run and listen at default port `8000`
 
 ## API
 
