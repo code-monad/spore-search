@@ -6,19 +6,20 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use ckb_sdk::CkbRpcClient;
-use ckb_sdk::rpc::ckb_indexer::{Cell, ScriptSearchMode, SearchKey};
-use ckb_sdk::traits::{CellQueryOptions, PrimaryScriptType};
+use ckb_sdk::rpc::ckb_indexer::{Cell, ScriptSearchMode, SearchKey, SearchKeyFilter};
+use ckb_sdk::traits::{CellQueryOptions, LiveCell, PrimaryScriptType};
 use ckb_types::{h256, H256};
 use ckb_types::core::ScriptHashType;
 use ckb_types::packed::Script;
 use ckb_types::prelude::*;
 use molecule::prelude::*;
+use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket::State;
 use spore_types::generated::spore_types::ClusterData;
 
 // These are testnet code hashes
-const SPORE_CODE_HASH: H256 = h256!("0xc1a7e2d2bd7e0fa90e2f1121782aa9f71204d1fee3a634bf3b12c61a69ee574f");
+const SPORE_CODE_HASH: H256 = h256!("0xbbad126377d45f90a8ee120da988a2d7332c78ba8fd679aab478a19d6c133494");
 const CLUSTER_CODE_HASH: H256 = h256!("0x598d793defef36e2eeba54a9b45130e4ca92822e1d193671f490950c3b856080");
 
 
@@ -40,6 +41,12 @@ struct ClusterJsonData {
     pub description: String,
     pub id: String,
 }
+
+trait CodeHash {
+    fn get_code_hash() -> H256;
+}
+
+
 
 impl From<Cell> for SporeJsonData {
     fn from(cell: Cell) -> Self {
@@ -66,18 +73,30 @@ impl From<Cell> for ClusterJsonData {
     }
 }
 
+impl CodeHash for SporeJsonData {
+    fn get_code_hash() -> H256 {
+        SPORE_CODE_HASH
+    }
+}
+
+impl CodeHash for ClusterJsonData {
+    fn get_code_hash() -> H256 {
+        CLUSTER_CODE_HASH
+    }
+}
+
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn index() -> Redirect {
+    Redirect::to("/api/v1/spore/all")
 }
 
 struct ClientContext {
     pub client: Arc<Mutex<CkbRpcClient>>,
 }
 
-fn get_cells_resp<T>(client: &mut CkbRpcClient, code_hash: H256, id: Option<&str>) -> String where T: Serialize + From<Cell> {
+fn get_cells_resp<T>(client: &mut CkbRpcClient, code_hash: H256, id: Option<&str>) -> String where T: Serialize + From<Cell> + CodeHash {
     let mut script_builder = Script::new_builder()
-        .code_hash(SPORE_CODE_HASH.pack()).hash_type(ScriptHashType::Data1.into());
+        .code_hash(T::get_code_hash().pack()).hash_type(ScriptHashType::Data1.into());
     let script = if let Some(id) = id {
         let id = &id[2..];
         let id_h265 = match H256::from_str(id) {
